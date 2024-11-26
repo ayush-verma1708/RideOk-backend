@@ -12,7 +12,7 @@ import { protect } from '../middleware/authMiddleware.js'; // Protect routes wit
 const router = express.Router();
 
 // Create a new ride
-router.post('/create', createRide);
+router.post('/create', protect, createRide);
 
 // Search for rides
 router.get('/search', searchRides);
