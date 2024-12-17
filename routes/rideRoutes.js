@@ -8,6 +8,7 @@ import {
   deleteRide,
   getRideDetails,
   getAllRides,
+  getUserRides,
 } from '../controllers/rideController.js';
 import { protect } from '../middleware/authMiddleware.js'; // Protect routes with authentication
 
@@ -29,9 +30,12 @@ router.put('/update/:rideId', protect, updateRide);
 router.delete('/delete/:rideId', protect, deleteRide);
 
 // Get a ride by ID
-router.get('/:rideId', getRideDetails);
+router.get('/rideId/:rideId', getRideDetails);
 
 // Get all rides
 router.get('/', getAllRides);
+
+// get all rides where the user is either the driver or a passenger
+router.get('/user-rides', protect, getUserRides);
 
 export default router;

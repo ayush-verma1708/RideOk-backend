@@ -134,3 +134,42 @@ export const getAllRides = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// Controller to get all rides where the user is either the driver or a passenger
+export const getUserRides = async (req, res) => {
+  try {
+    // Access the logged-in user's ID from the request object (assuming user is authenticated)
+    const userId = req.user._id; // The user's ID should be set by your authentication middleware
+
+    // Check if userId exists
+    if (!userId) {
+      console.error('User ID not found in request');
+      return res.status(400).json({ message: 'User not authenticated' });
+    }
+
+    // Fetch rides where the user is either the driver or a passenger
+    const rides = await Ride.find({
+      $or: [
+        { driver: userId }, // User is the driver
+        { passengers: userId }, // User is a passenger
+      ],
+    })
+      .populate('driver', 'name email') // Populate the driver's details
+      .populate('passengers', 'name email'); // Populate the passengers' details
+
+    // If no rides are found, return a 404 error
+    if (!rides || rides.length === 0) {
+      console.log('No rides found for this user.');
+      return res.status(404).json({ message: 'No rides found for this user.' });
+    }
+
+    // Send the rides in the response
+    return res.status(200).json(rides);
+  } catch (error) {
+    // Log the error details for debugging
+    console.error('Error occurred while fetching user rides:', error);
+    return res
+      .status(500)
+      .json({ message: 'An error occurred while fetching rides.' });
+  }
+};
