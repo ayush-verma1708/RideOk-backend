@@ -15,7 +15,13 @@ export const registerUser = async (req, res) => {
     // Create new user
     const user = await User.create({ name, email, password });
 
+    // Generate JWT token after registration
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRATION || '30d',
+    });
+
     res.status(201).json({
+      token, // Include token in the response
       _id: user._id,
       name: user.name,
       email: user.email,
@@ -30,41 +36,31 @@ export const registerUser = async (req, res) => {
 };
 
 // Login User
+// Login User (Controller - backend)
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // Check if password matches
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // Generate JWT token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRATION || '30d', // Configurable expiration
+      expiresIn: process.env.JWT_EXPIRATION || '30d',
     });
 
-    res.json({ token });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error, please try again later' });
-  }
-};
-
-// Get User Profile
-export const getUserProfile = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select('-password');
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    res.json(user);
+    res.json({
+      token,
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error, please try again later' });
   }
@@ -107,6 +103,18 @@ export const deleteUser = async (req, res) => {
 
     await user.remove();
     res.json({ message: 'User removed' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error, please try again later' });
+  }
+};
+// Get User Profile
+export const getUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(user);
   } catch (error) {
     res.status(500).json({ message: 'Server error, please try again later' });
   }

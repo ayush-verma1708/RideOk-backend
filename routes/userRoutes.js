@@ -17,7 +17,7 @@ router.post('/register', registerUser);
 router.post('/login', loginUser);
 
 // Get User Profile
-router.get('/profile', protect, getUserProfile);
+router.get('/me', protect, getUserProfile);
 
 // Update User Profile
 router.put('/profile', protect, updateUserProfile);
