@@ -3,8 +3,14 @@ import Ride from '../models/Ride.js';
 
 // Create a new ride
 export const createRide = async (req, res) => {
-  const { startLocation, endLocation, price, availableSeats, rideDate } =
-    req.body;
+  const {
+    startLocation,
+    endLocation,
+    price,
+    availableSeats,
+    rideDate,
+    rideTime,
+  } = req.body;
   try {
     const newRide = new Ride({
       driver: req.user._id, // Assume user is authenticated and req.user contains user details
@@ -13,6 +19,7 @@ export const createRide = async (req, res) => {
       price,
       availableSeats,
       rideDate,
+      rideTime, // Added rideTime here
     });
 
     const ride = await newRide.save();
@@ -62,8 +69,14 @@ export const bookRide = async (req, res) => {
 // Update a ride
 export const updateRide = async (req, res) => {
   const { rideId } = req.params;
-  const { startLocation, endLocation, price, availableSeats, rideDate } =
-    req.body;
+  const {
+    startLocation,
+    endLocation,
+    price,
+    availableSeats,
+    rideDate,
+    rideTime,
+  } = req.body;
 
   try {
     const ride = await Ride.findById(rideId);
@@ -80,6 +93,7 @@ export const updateRide = async (req, res) => {
     ride.price = price || ride.price;
     ride.availableSeats = availableSeats || ride.availableSeats;
     ride.rideDate = rideDate || ride.rideDate;
+    ride.rideTime = rideTime || ride.rideTime; // Updated with rideTime
 
     await ride.save();
     res.status(200).json(ride);

@@ -34,7 +34,13 @@ const rideSchema = mongoose.Schema(
       type: Date,
       required: true,
     },
+    rideTime: {
+      // New field to store the time of the ride
+      type: Date,
+      required: true,
+    },
   },
+
   { timestamps: true }
 );
 
