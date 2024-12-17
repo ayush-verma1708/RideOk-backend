@@ -1,6 +1,34 @@
 // controllers/rideController.js
 import Ride from '../models/Ride.js';
 
+// // Create a new ride
+// export const createRide = async (req, res) => {
+//   const {
+//     startLocation,
+//     endLocation,
+//     price,
+//     availableSeats,
+//     rideDate,
+//     rideTime,
+//   } = req.body;
+//   try {
+//     const newRide = new Ride({
+//       driver: req.user._id, // Assume user is authenticated and req.user contains user details
+//       startLocation,
+//       endLocation,
+//       price,
+//       availableSeats,
+//       rideDate,
+//       rideTime, // Added rideTime here
+//     });
+
+//     const ride = await newRide.save();
+//     res.status(201).json(ride);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
 // Create a new ride
 export const createRide = async (req, res) => {
   const {
@@ -11,21 +39,71 @@ export const createRide = async (req, res) => {
     rideDate,
     rideTime,
   } = req.body;
+
+  // Input validation
+  if (
+    !startLocation ||
+    !endLocation ||
+    !price ||
+    !availableSeats ||
+    !rideDate ||
+    !rideTime
+  ) {
+    return res
+      .status(400)
+      .json({ message: 'All fields are required to create a ride.' });
+  }
+
+  if (availableSeats <= 0) {
+    return res
+      .status(400)
+      .json({ message: 'Available seats must be at least 1.' });
+  }
+
+  if (price <= 0) {
+    return res.status(400).json({ message: 'Price must be greater than 0.' });
+  }
+
   try {
+    // Check if the user is authenticated
+    if (!req.user || !req.user._id) {
+      return res
+        .status(401)
+        .json({ message: 'Unauthorized: User not logged in.' });
+    }
+
+    // Create a new ride instance
     const newRide = new Ride({
-      driver: req.user._id, // Assume user is authenticated and req.user contains user details
+      driver: req.user._id, // User ID of the authenticated user
       startLocation,
       endLocation,
       price,
       availableSeats,
       rideDate,
-      rideTime, // Added rideTime here
+      rideTime,
     });
 
+    // Save the new ride to the database
     const ride = await newRide.save();
-    res.status(201).json(ride);
+
+    res.status(201).json({
+      message: 'Ride created successfully.',
+      ride,
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    // Handle specific validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map((err) => err.message);
+      return res.status(400).json({ message: 'Validation Error', errors });
+    }
+
+    // General error fallback
+    console.error('Error creating ride:', error);
+    res
+      .status(500)
+      .json({
+        message: 'An internal server error occurred. Please try again later.',
+      });
   }
 };
 
@@ -173,7 +251,6 @@ export const getUserRides = async (req, res) => {
 
     // If no rides are found, return a 404 error
     if (!rides || rides.length === 0) {
-      console.log('No rides found for this user.');
       return res.status(404).json({ message: 'No rides found for this user.' });
     }
 
