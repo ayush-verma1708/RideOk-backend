@@ -108,3 +108,29 @@ export const deleteRide = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// Get ride details
+export const getRideDetails = async (req, res) => {
+  const { rideId } = req.params;
+
+  try {
+    const ride = await Ride.findById(rideId).populate('driver', 'name email');
+    if (!ride) {
+      return res.status(404).json({ message: 'Ride not found' });
+    }
+
+    res.status(200).json(ride);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get all rides
+export const getAllRides = async (req, res) => {
+  try {
+    const rides = await Ride.find().populate('driver', 'name email');
+    res.status(200).json(rides);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

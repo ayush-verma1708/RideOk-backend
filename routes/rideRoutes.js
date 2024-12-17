@@ -6,6 +6,8 @@ import {
   bookRide,
   updateRide,
   deleteRide,
+  getRideDetails,
+  getAllRides,
 } from '../controllers/rideController.js';
 import { protect } from '../middleware/authMiddleware.js'; // Protect routes with authentication
 
@@ -25,5 +27,11 @@ router.put('/update/:rideId', protect, updateRide);
 
 // Delete a ride (only the driver can delete)
 router.delete('/delete/:rideId', protect, deleteRide);
+
+// Get a ride by ID
+router.get('/:rideId', getRideDetails);
+
+// Get all rides
+router.get('/', getAllRides);
 
 export default router;
