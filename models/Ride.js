@@ -39,6 +39,10 @@ const rideSchema = mongoose.Schema(
       type: Date,
       required: true,
     },
+    isExpired: {
+      type: Boolean,
+      default: false,
+    },
   },
 
   { timestamps: true }
