@@ -1,34 +1,6 @@
 // controllers/rideController.js
 import Ride from '../models/Ride.js';
 
-// // Create a new ride
-// export const createRide = async (req, res) => {
-//   const {
-//     startLocation,
-//     endLocation,
-//     price,
-//     availableSeats,
-//     rideDate,
-//     rideTime,
-//   } = req.body;
-//   try {
-//     const newRide = new Ride({
-//       driver: req.user._id, // Assume user is authenticated and req.user contains user details
-//       startLocation,
-//       endLocation,
-//       price,
-//       availableSeats,
-//       rideDate,
-//       rideTime, // Added rideTime here
-//     });
-
-//     const ride = await newRide.save();
-//     res.status(201).json(ride);
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// };
-
 // Create a new ride
 export const createRide = async (req, res) => {
   const {
@@ -99,11 +71,9 @@ export const createRide = async (req, res) => {
 
     // General error fallback
     console.error('Error creating ride:', error);
-    res
-      .status(500)
-      .json({
-        message: 'An internal server error occurred. Please try again later.',
-      });
+    res.status(500).json({
+      message: 'An internal server error occurred. Please try again later.',
+    });
   }
 };
 
