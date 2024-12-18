@@ -1,5 +1,15 @@
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
+import { admin } from '../config/firebaseAdmin.js';
+
+const verifyToken = async (token) => {
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    return decodedToken;
+  } catch (error) {
+    throw new Error('Invalid Firebase token');
+  }
+};
 
 // Register User
 export const registerUser = async (req, res) => {
