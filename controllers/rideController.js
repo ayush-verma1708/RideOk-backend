@@ -77,13 +77,33 @@ export const createRide = async (req, res) => {
   }
 };
 
+// // Search for rides
+// export const searchRides = async (req, res) => {
+//   const { startLocation, endLocation } = req.query;
+//   try {
+//     const rides = await Ride.find({
+//       startLocation: { $regex: startLocation, $options: 'i' }, // Case insensitive search
+//       endLocation: { $regex: endLocation, $options: 'i' },
+//     }).populate('driver', 'name email');
+
+//     res.status(200).json(rides);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
 // Search for rides
 export const searchRides = async (req, res) => {
   const { startLocation, endLocation } = req.query;
+
   try {
+    // Get current date and time
+    const currentTime = new Date();
+
+    // Search for rides based on locations and future ride time
     const rides = await Ride.find({
       startLocation: { $regex: startLocation, $options: 'i' }, // Case insensitive search
       endLocation: { $regex: endLocation, $options: 'i' },
+      rideTime: { $gte: currentTime }, // Filter for rides that are in the future
     }).populate('driver', 'name email');
 
     res.status(200).json(rides);
@@ -187,10 +207,27 @@ export const getRideDetails = async (req, res) => {
   }
 };
 
+// // Get all rides
+// export const getAllRides = async (req, res) => {
+//   try {
+//     const rides = await Ride.find().populate('driver', 'name email');
+//     res.status(200).json(rides);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
 // Get all rides
 export const getAllRides = async (req, res) => {
   try {
-    const rides = await Ride.find().populate('driver', 'name email');
+    // Get current date and time
+    const currentTime = new Date();
+
+    // Find rides where rideTime is greater than or equal to the current time
+    const rides = await Ride.find({
+      rideTime: { $gte: currentTime },
+    }).populate('driver', 'name email');
+
     res.status(200).json(rides);
   } catch (error) {
     res.status(500).json({ message: error.message });
