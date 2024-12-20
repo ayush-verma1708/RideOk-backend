@@ -77,8 +77,8 @@ export const addPassenger = async (req, res) => {
     // Create a new passenger entry to be added to the ride
     const newPassenger = {
       user: passengerData.user, // Get the user from the request object (assuming the user is authenticated)
-      phoneNumber: passengerData.phoneNumber,
       location: passengerData.location,
+      phoneNumber: passengerData.phoneNumber,
     };
 
     // Add the new passenger to the ride's passenger list
