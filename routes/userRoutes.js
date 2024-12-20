@@ -5,6 +5,7 @@ import {
   getUserProfile,
   updateUserProfile,
   deleteUser,
+  updatePhoneNumber,
 } from '../controllers/userController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -24,5 +25,8 @@ router.put('/profile', protect, updateUserProfile);
 
 // Delete User
 router.delete('/profile', protect, deleteUser);
+
+// Add phone number
+router.put('/updatePhoneNumber', updatePhoneNumber);
 
 export default router;

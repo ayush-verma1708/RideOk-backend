@@ -119,3 +119,94 @@ export const getUserProfile = async (req, res) => {
     res.status(500).json({ message: 'Server error, please try again later' });
   }
 };
+
+// Add phone number
+export const updatePhoneNumber = async (req, res) => {
+  const { userId, phoneNumber } = req.body;
+  console.log(userId, phoneNumber);
+
+  if (!userId || !phoneNumber) {
+    return res.status(400).json({
+      success: false,
+      message: 'User ID and phone number are required.',
+    });
+  }
+
+  try {
+    // Find the user in the database
+    const user = await User.findById(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: 'User not found.' });
+    }
+
+    // Update the phone number
+    user.phoneNumber = phoneNumber;
+    await user.save(); // Save the updated user document
+
+    // Return a success response with the updated user data or a success message
+    res.status(200).json({
+      success: true,
+      message: 'Phone number updated successfully.',
+    });
+  } catch (error) {
+    console.error('Error updating phone number:', error);
+    res.status(500).json({ success: false, message: 'Internal server error.' });
+  }
+};
+
+// export const updatePhoneNumber = async (req, res) => {
+//   const { userId, phoneNumber } = req.body;
+//   console.log(userId, phoneNumber);
+//   if (!userId || !phoneNumber) {
+//     return res.status(400).json({
+//       success: false,
+//       message: 'User ID and phone number are required.',
+//     });
+//   }
+
+//   try {
+//     // Update the phone number in your database (this example assumes MongoDB with Mongoose)
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: 'User not found.' });
+//     }
+
+//     user.phoneNumber = phoneNumber;
+//     await user.save();
+
+//     res.status(200);
+//   } catch (error) {
+//     console.error('Error updating phone number:', error);
+//     res.status(500).json({ success: false, message: 'Internal server error.' });
+//   }
+// };
+
+// Controller to update user's phone number
+// export const updatePhoneNumber = async (req, res) => {
+//   const { userId, phoneNumber } = req.body;
+
+//   try {
+//     // Find the user by userId
+//     const user = await User.findById(userId);
+
+//     if (!user) {
+//       return res.status(404).json({ message: 'User not found.' });
+//     }
+
+//     // Update the user's phone number
+//     user.phoneNumber = phoneNumber;
+//     await user.save();
+
+//     // Respond with success
+//     return res
+//       .status(200)
+//       .json({ message: 'Phone number updated successfully.' });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ message: 'Server error.' });
+//   }
+// };

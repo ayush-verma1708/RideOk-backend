@@ -26,8 +26,22 @@ const rideSchema = mongoose.Schema(
     },
     passengers: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User', // Reference to the User model for passengers
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User', // Reference to the User model for passengers
+        },
+        phoneNumber: {
+          type: String, // Store phone number directly in the passengers array
+          // required: true,
+        },
+        location: {
+          type: String, // Store location directly in the passengers array
+          // required: true,
+        },
+        approval: {
+          type: Boolean,
+          default: false, // Initially, passengers are not approved
+        },
       },
     ],
     rideDate: {
