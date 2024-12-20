@@ -8,9 +8,6 @@ import {
   getRideDetails,
   getAllRides,
   getUserRides,
-  approvePassenger,
-  rejectPassenger,
-  addPassengerToRide, // Add the new function for adding passengers
 } from '../controllers/rideController.js';
 import { protect } from '../middleware/authMiddleware.js'; // Protect routes with authentication
 
@@ -24,16 +21,6 @@ router.get('/search', searchRides);
 
 // Book a ride
 router.post('/book/:rideId', protect, bookRide);
-
-// Approve a passenger (only the driver can approve passengers)
-router.put(
-  '/approve-passenger/:rideId/:passengerId',
-  protect,
-  approvePassenger
-);
-
-// Reject a passenger (only the driver can reject passengers)
-router.put('/reject-passenger/:rideId/:passengerId', protect, rejectPassenger);
 
 // Update a ride (only the driver can update)
 router.put('/update/:rideId', protect, updateRide);
@@ -49,9 +36,6 @@ router.get('/', getAllRides);
 
 // Get all rides where the user is either the driver or a passenger
 router.get('/user-rides', protect, getUserRides);
-
-// Add a passenger to a ride
-router.post('/add-passenger', protect, addPassengerToRide); // Add passenger route
 
 export default router;
 

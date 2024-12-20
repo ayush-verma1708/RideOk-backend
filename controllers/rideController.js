@@ -126,64 +126,6 @@ export const bookRide = async (req, res) => {
   }
 };
 
-// Approve a passenger
-export const approvePassenger = async (req, res) => {
-  const { rideId, passengerId } = req.params;
-
-  try {
-    const ride = await Ride.findById(rideId);
-
-    // Only the driver can approve passengers
-    if (ride.driver.toString() !== req.user._id.toString()) {
-      return res
-        .status(403)
-        .json({ message: 'You are not the driver of this ride' });
-    }
-
-    const passenger = ride.passengers.id(passengerId);
-
-    if (!passenger) {
-      return res.status(404).json({ message: 'Passenger not found' });
-    }
-
-    passenger.approval = true; // Approve the passenger
-    await ride.save();
-    res.status(200).json({ message: 'Passenger approved', ride });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// Reject a passenger
-export const rejectPassenger = async (req, res) => {
-  const { rideId, passengerId } = req.params;
-
-  try {
-    const ride = await Ride.findById(rideId);
-
-    // Only the driver can reject passengers
-    if (ride.driver.toString() !== req.user._id.toString()) {
-      return res
-        .status(403)
-        .json({ message: 'You are not the driver of this ride' });
-    }
-
-    const passengerIndex = ride.passengers.findIndex(
-      (p) => p.user.toString() === passengerId
-    );
-
-    if (passengerIndex === -1) {
-      return res.status(404).json({ message: 'Passenger not found' });
-    }
-
-    ride.passengers.splice(passengerIndex, 1); // Remove passenger from ride
-    await ride.save();
-    res.status(200).json({ message: 'Passenger rejected', ride });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
 // Update a ride
 export const updateRide = async (req, res) => {
   const { rideId } = req.params;
@@ -307,35 +249,6 @@ export const getUserRides = async (req, res) => {
 };
 
 // controllers/rideController.js
-
-// Function to add a passenger to a ride
-export const addPassengerToRide = async (rideId, passengerData, token) => {
-  try {
-    // Assuming the passenger model looks like this:
-    const { userId, location, phoneNumber } = passengerData;
-
-    console.log(location, phoneNumber);
-    // Validate that all required fields are present
-
-    // Add the passenger to the ride
-    const ride = await Ride.findById(rideId);
-    if (!ride) {
-      throw new Error('Ride not found');
-    }
-
-    ride.passengers.push({
-      userId,
-      location, // Add location
-      phoneNumber, // Add phoneNumber
-    });
-
-    await ride.save(); // Save the updated ride document
-    return { success: true, message: 'Passenger added successfully.' };
-  } catch (error) {
-    console.error(error);
-    return { success: false, message: error.message };
-  }
-};
 
 // // controllers/rideController.js
 // import Ride from '../models/Ride.js';
