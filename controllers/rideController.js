@@ -216,6 +216,37 @@ export const getAllRides = async (req, res) => {
 };
 
 // Get all rides where the user is either the driver or a passenger
+// export const getUserRides = async (req, res) => {
+//   try {
+//     const userId = req.user._id;
+
+//     if (!userId) {
+//       return res.status(400).json({ message: 'User not authenticated' });
+//     }
+
+//     const currentTime = new Date();
+
+//     const rides = await Ride.find({
+//       $or: [{ driver: userId }, { passengers: userId }],
+//       rideTime: { $gte: currentTime },
+//     })
+//       .populate('driver', 'name email')
+//       .populate('passengers', 'name email');
+
+//     if (!rides || rides.length === 0) {
+//       return res
+//         .status(404)
+//         .json({ message: 'No future rides found for this user.' });
+//     }
+
+//     return res.status(200).json(rides);
+//   } catch (error) {
+//     console.error('Error occurred while fetching user rides:', error);
+//     return res
+//       .status(500)
+//       .json({ message: 'An error occurred while fetching rides.' });
+//   }
+// };
 export const getUserRides = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -227,11 +258,16 @@ export const getUserRides = async (req, res) => {
     const currentTime = new Date();
 
     const rides = await Ride.find({
-      $or: [{ driver: userId }, { passengers: userId }],
-      rideTime: { $gte: currentTime },
+      $or: [
+        { driver: userId }, // User is the driver
+        { 'passengers.user': userId }, // User is a passenger
+        { 'customerRequests.user': userId }, // User has requested a ride
+      ],
+      rideTime: { $gte: currentTime }, // Only future rides
     })
-      .populate('driver', 'name email')
-      .populate('passengers', 'name email');
+      .populate('driver', 'name email') // Populate driver details
+      .populate('passengers.user', 'name email') // Populate passenger details
+      .populate('customerRequests.user', 'name email'); // Populate customer request details
 
     if (!rides || rides.length === 0) {
       return res
