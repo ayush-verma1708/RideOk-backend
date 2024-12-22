@@ -127,6 +127,40 @@ export const bookRide = async (req, res) => {
 };
 
 // Update a ride
+// export const updateRide = async (req, res) => {
+//   const { rideId } = req.params;
+//   const {
+//     startLocation,
+//     endLocation,
+//     price,
+//     availableSeats,
+//     rideDate,
+//     rideTime,
+//   } = req.body;
+
+//   try {
+//     const ride = await Ride.findById(rideId);
+
+//     // Only the driver can update the ride
+//     if (ride.driver.toString() !== req.user._id.toString()) {
+//       return res
+//         .status(403)
+//         .json({ message: 'You are not the driver of this ride' });
+//     }
+
+//     ride.startLocation = startLocation || ride.startLocation;
+//     ride.endLocation = endLocation || ride.endLocation;
+//     ride.price = price || ride.price;
+//     ride.availableSeats = availableSeats || ride.availableSeats;
+//     ride.rideDate = rideDate || ride.rideDate;
+//     ride.rideTime = rideTime || ride.rideTime;
+
+//     await ride.save();
+//     res.status(200).json(ride);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
 export const updateRide = async (req, res) => {
   const { rideId } = req.params;
   const {
@@ -136,10 +170,17 @@ export const updateRide = async (req, res) => {
     availableSeats,
     rideDate,
     rideTime,
+    isExpired, // Adding this to handle expiration status
   } = req.body;
 
   try {
+    // Find the ride by its ID
     const ride = await Ride.findById(rideId);
+
+    // Check if the ride exists
+    if (!ride) {
+      return res.status(404).json({ message: 'Ride not found' });
+    }
 
     // Only the driver can update the ride
     if (ride.driver.toString() !== req.user._id.toString()) {
@@ -148,17 +189,21 @@ export const updateRide = async (req, res) => {
         .json({ message: 'You are not the driver of this ride' });
     }
 
+    // Update the ride details, using the incoming data or keeping the current values
     ride.startLocation = startLocation || ride.startLocation;
     ride.endLocation = endLocation || ride.endLocation;
     ride.price = price || ride.price;
     ride.availableSeats = availableSeats || ride.availableSeats;
     ride.rideDate = rideDate || ride.rideDate;
     ride.rideTime = rideTime || ride.rideTime;
+    ride.isExpired = isExpired !== undefined ? isExpired : ride.isExpired; // Update the expiration status if provided
 
+    // Save the updated ride
     await ride.save();
-    res.status(200).json(ride);
+
+    res.status(200).json(ride); // Return the updated ride
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message }); // Catch and handle errors
   }
 };
 
@@ -207,6 +252,7 @@ export const getAllRides = async (req, res) => {
     // Find rides where rideTime is greater than or equal to the current time
     const rides = await Ride.find({
       rideTime: { $gte: currentTime },
+      isExpired: false,
     }).populate('driver', 'name email');
 
     res.status(200).json(rides);
