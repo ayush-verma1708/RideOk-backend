@@ -126,41 +126,6 @@ export const bookRide = async (req, res) => {
   }
 };
 
-// Update a ride
-// export const updateRide = async (req, res) => {
-//   const { rideId } = req.params;
-//   const {
-//     startLocation,
-//     endLocation,
-//     price,
-//     availableSeats,
-//     rideDate,
-//     rideTime,
-//   } = req.body;
-
-//   try {
-//     const ride = await Ride.findById(rideId);
-
-//     // Only the driver can update the ride
-//     if (ride.driver.toString() !== req.user._id.toString()) {
-//       return res
-//         .status(403)
-//         .json({ message: 'You are not the driver of this ride' });
-//     }
-
-//     ride.startLocation = startLocation || ride.startLocation;
-//     ride.endLocation = endLocation || ride.endLocation;
-//     ride.price = price || ride.price;
-//     ride.availableSeats = availableSeats || ride.availableSeats;
-//     ride.rideDate = rideDate || ride.rideDate;
-//     ride.rideTime = rideTime || ride.rideTime;
-
-//     await ride.save();
-//     res.status(200).json(ride);
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// };
 export const updateRide = async (req, res) => {
   const { rideId } = req.params;
   const {
@@ -261,38 +226,6 @@ export const getAllRides = async (req, res) => {
   }
 };
 
-// Get all rides where the user is either the driver or a passenger
-// export const getUserRides = async (req, res) => {
-//   try {
-//     const userId = req.user._id;
-
-//     if (!userId) {
-//       return res.status(400).json({ message: 'User not authenticated' });
-//     }
-
-//     const currentTime = new Date();
-
-//     const rides = await Ride.find({
-//       $or: [{ driver: userId }, { passengers: userId }],
-//       rideTime: { $gte: currentTime },
-//     })
-//       .populate('driver', 'name email')
-//       .populate('passengers', 'name email');
-
-//     if (!rides || rides.length === 0) {
-//       return res
-//         .status(404)
-//         .json({ message: 'No future rides found for this user.' });
-//     }
-
-//     return res.status(200).json(rides);
-//   } catch (error) {
-//     console.error('Error occurred while fetching user rides:', error);
-//     return res
-//       .status(500)
-//       .json({ message: 'An error occurred while fetching rides.' });
-//   }
-// };
 export const getUserRides = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -329,6 +262,135 @@ export const getUserRides = async (req, res) => {
       .json({ message: 'An error occurred while fetching rides.' });
   }
 };
+
+export const handleRideRequest = async (req, res) => {
+  const { rideId, action, passengerId } = req.body;
+
+  try {
+    // Validate input
+    if (!rideId || !action || !passengerId) {
+      return res.status(400).json({ message: 'Invalid input parameters' });
+    }
+
+    // Find the ride by ID
+    const ride = await Ride.findById(rideId);
+    if (!ride) {
+      return res.status(404).json({ message: 'Ride not found' });
+    }
+
+    // Find the passenger in customerRequests
+    const passengerRequestIndex = ride.customerRequests.findIndex(
+      (req) => req.user.toString() === passengerId
+    );
+    if (passengerRequestIndex === -1) {
+      return res.status(404).json({ message: 'Passenger request not found' });
+    }
+
+    if (action === 'approve') {
+      // Move passenger to passengers array
+      const passengerData = ride.customerRequests[passengerRequestIndex];
+      ride.passengers.push({
+        user: passengerData.user,
+        phoneNumber: passengerData.phoneNumber,
+        location: passengerData.location,
+        approval: true,
+      });
+
+      // Remove from customerRequests
+      ride.customerRequests.splice(passengerRequestIndex, 1);
+
+      // Decrease available seats
+      ride.availableSeats -= 1;
+      if (ride.availableSeats < 0) {
+        return res
+          .status(400)
+          .json({ message: 'No available seats remaining' });
+      }
+    } else if (action === 'reject') {
+      // Remove the passenger request
+      ride.customerRequests.splice(passengerRequestIndex, 1);
+    } else {
+      return res.status(400).json({ message: 'Invalid action' });
+    }
+
+    // Save the updated ride
+    await ride.save();
+
+    res.status(200).json({ message: `Request ${action}ed successfully`, ride });
+  } catch (error) {
+    console.error('Error handling ride request:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// Update a ride
+// export const updateRide = async (req, res) => {
+//   const { rideId } = req.params;
+//   const {
+//     startLocation,
+//     endLocation,
+//     price,
+//     availableSeats,
+//     rideDate,
+//     rideTime,
+//   } = req.body;
+
+//   try {
+//     const ride = await Ride.findById(rideId);
+
+//     // Only the driver can update the ride
+//     if (ride.driver.toString() !== req.user._id.toString()) {
+//       return res
+//         .status(403)
+//         .json({ message: 'You are not the driver of this ride' });
+//     }
+
+//     ride.startLocation = startLocation || ride.startLocation;
+//     ride.endLocation = endLocation || ride.endLocation;
+//     ride.price = price || ride.price;
+//     ride.availableSeats = availableSeats || ride.availableSeats;
+//     ride.rideDate = rideDate || ride.rideDate;
+//     ride.rideTime = rideTime || ride.rideTime;
+
+//     await ride.save();
+//     res.status(200).json(ride);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
+// Get all rides where the user is either the driver or a passenger
+// export const getUserRides = async (req, res) => {
+//   try {
+//     const userId = req.user._id;
+
+//     if (!userId) {
+//       return res.status(400).json({ message: 'User not authenticated' });
+//     }
+
+//     const currentTime = new Date();
+
+//     const rides = await Ride.find({
+//       $or: [{ driver: userId }, { passengers: userId }],
+//       rideTime: { $gte: currentTime },
+//     })
+//       .populate('driver', 'name email')
+//       .populate('passengers', 'name email');
+
+//     if (!rides || rides.length === 0) {
+//       return res
+//         .status(404)
+//         .json({ message: 'No future rides found for this user.' });
+//     }
+
+//     return res.status(200).json(rides);
+//   } catch (error) {
+//     console.error('Error occurred while fetching user rides:', error);
+//     return res
+//       .status(500)
+//       .json({ message: 'An error occurred while fetching rides.' });
+//   }
+// };
 
 // controllers/rideController.js
 

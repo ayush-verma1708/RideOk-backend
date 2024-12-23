@@ -8,6 +8,7 @@ import {
   getRideDetails,
   getAllRides,
   getUserRides,
+  handleRideRequest,
 } from '../controllers/rideController.js';
 import { protect } from '../middleware/authMiddleware.js'; // Protect routes with authentication
 
@@ -36,6 +37,9 @@ router.get('/', getAllRides);
 
 // Get all rides where the user is either the driver or a passenger
 router.get('/user-rides', protect, getUserRides);
+
+// Mark action
+router.post('/handle-request', handleRideRequest);
 
 export default router;
 
