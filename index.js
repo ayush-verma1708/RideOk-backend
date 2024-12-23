@@ -13,13 +13,10 @@ const app = express();
 app.use(express.json());
 
 const corsOptions = {
-  origin: 'https://rideok-new.vercel.app', // Allow only your frontend domain
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: true, // Allow all origins
 };
 
-// Use CORS middleware
-app.use(cors(corsOptions)); // Use the custom CORS configuration
+app.use(cors(corsOptions));
 
 // Test Route
 app.get('/', (req, res) => {
